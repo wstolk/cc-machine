@@ -209,6 +209,10 @@ else
     info "Installing SDKMan…"
     curl -fsSL https://get.sdkman.io | bash
 fi
+# sdkman-init.sh may re-enable nounset internally; pre-export the
+# variables it expects so sourcing doesn't fail under set -u.
+export SDKMAN_DIR="${SDKMAN_DIR:-$HOME_DIR/.sdkman}"
+export SDKMAN_CANDIDATES_API="${SDKMAN_CANDIDATES_API:-https://api.sdkman.io/2}"
 # shellcheck disable=SC1091
 source "$HOME_DIR/.sdkman/bin/sdkman-init.sh"
 
