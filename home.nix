@@ -52,9 +52,7 @@ in
 
     # Languages managed by Nix
     go                  # Golang
-    nodejs_22           # Node.js (TypeScript / Claude Code npm)
-    nodePackages.npm
-    nodePackages.typescript
+    nodejs_22           # Node.js (TypeScript / Claude Code npm – npm is bundled)
 
     # Zellij terminal multiplexer
     zellij
