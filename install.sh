@@ -201,15 +201,14 @@ fi
 # 5. SDKMan → Java 21 LTS + Kotlin + Gradle + Maven
 # =============================================================================
 section "SDKMan (Java / Kotlin / Gradle / Maven)"
+# SDKMan's scripts use unbound variables, so temporarily relax nounset.
+set +u
 if [[ -d "$HOME_DIR/.sdkman" ]]; then
     info "SDKMan already installed – sourcing."
 else
     info "Installing SDKMan…"
     curl -fsSL https://get.sdkman.io | bash
 fi
-
-# SDKMan's init script uses unbound variables, so temporarily relax nounset.
-set +u
 # shellcheck disable=SC1091
 source "$HOME_DIR/.sdkman/bin/sdkman-init.sh"
 
