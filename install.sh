@@ -91,7 +91,7 @@ section "System prerequisites"
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends \
     curl wget git build-essential pkg-config libssl-dev \
-    zsh unzip ca-certificates gnupg lsb-release \
+    zsh unzip zip ca-certificates gnupg lsb-release \
     software-properties-common apt-transport-https
 
 # =============================================================================
