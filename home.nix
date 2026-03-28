@@ -153,8 +153,10 @@ in
   # ---------------------------------------------------------------------------
   programs.zellij = {
     enable = true;
-    # Auto-start zellij when opening a terminal
-    enableZshIntegration = true;
+    # Auto-start is handled in config/zsh/extras.zsh (with session naming
+    # and guard for VSCode / tmux).  Do NOT also set enableZshIntegration
+    # here – the two auto-start mechanisms conflict and can cause loops.
+    enableZshIntegration = false;
     settings = {};
   };
 
