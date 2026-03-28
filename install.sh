@@ -102,8 +102,13 @@ if have nix; then
     info "Nix already installed – skipping."
 else
     info "Installing Nix (multi-user)…"
-    # Clean up backup files from any previous failed Nix install attempt;
-    # the installer refuses to run if these already exist.
+    # Clean up leftovers from any previous failed Nix install attempt.
+    # 1. Stop the nix-daemon so the installer can overwrite binaries
+    #    (avoids "Text file busy" errors).
+    if sudo systemctl is-active --quiet nix-daemon.service 2>/dev/null; then
+        sudo systemctl stop nix-daemon.socket nix-daemon.service
+    fi
+    # 2. Restore shell profile backups so the installer can create fresh ones.
     for f in /etc/bash.bashrc /etc/bashrc /etc/profile /etc/zshrc /etc/zsh/zshrc; do
         if [[ -f "${f}.backup-before-nix" ]]; then
             sudo mv "${f}.backup-before-nix" "$f"
