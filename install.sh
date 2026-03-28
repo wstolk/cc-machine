@@ -142,7 +142,7 @@ if have home-manager; then
     info "Home Manager already installed – skipping."
 else
     info "Installing Home Manager…"
-    nix-channel --add https://github.com/nix-community/home-manager/archive/release-24.05.tar.gz home-manager
+    nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
     nix-channel --update
     # shellcheck disable=SC1091
     nix-shell '<home-manager>' -A install

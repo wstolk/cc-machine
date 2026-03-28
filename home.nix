@@ -191,5 +191,5 @@
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. Do not change it.
-  home.stateVersion = "24.05";
+  home.stateVersion = "25.05";
 }
