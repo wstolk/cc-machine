@@ -201,38 +201,40 @@ fi
 # 5. SDKMan → Java 21 LTS + Kotlin + Gradle + Maven
 # =============================================================================
 section "SDKMan (Java / Kotlin / Gradle / Maven)"
-# SDKMan's scripts use unbound variables, so temporarily relax nounset.
-set +u
-if [[ -d "$HOME_DIR/.sdkman" ]]; then
-    info "SDKMan already installed – sourcing."
-else
+if [[ ! -d "$HOME_DIR/.sdkman" ]]; then
     info "Installing SDKMan…"
     curl -fsSL https://get.sdkman.io | bash
+else
+    info "SDKMan already installed."
 fi
-# sdkman-init.sh may re-enable nounset internally; pre-export the
-# variables it expects so sourcing doesn't fail under set -u.
-export SDKMAN_DIR="${SDKMAN_DIR:-$HOME_DIR/.sdkman}"
-export SDKMAN_CANDIDATES_API="${SDKMAN_CANDIDATES_API:-https://api.sdkman.io/2}"
-# shellcheck disable=SC1091
-source "$HOME_DIR/.sdkman/bin/sdkman-init.sh"
 
-_sdk_install() {
-    local candidate="$1"; shift
-    local version="${1:-}"
-    if sdk list "$candidate" 2>/dev/null | grep -q "installed"; then
-        info "$candidate already installed via SDKMan."
-    elif [[ -n "$version" ]]; then
-        sdk install "$candidate" "$version" || warn "SDKMan install $candidate $version failed."
-    else
-        sdk install "$candidate" || warn "SDKMan install $candidate failed."
-    fi
-}
+# SDKMan's init script re-enables strict mode internally and references
+# unbound variables, making it incompatible with set -euo pipefail.
+# Run the entire SDKMan sourcing + install block in a subshell with
+# strict mode fully disabled.
+(
+    set +euo pipefail
+    export SDKMAN_DIR="${SDKMAN_DIR:-$HOME_DIR/.sdkman}"
+    # shellcheck disable=SC1091
+    source "$HOME_DIR/.sdkman/bin/sdkman-init.sh"
 
-_sdk_install java   "21.0.3-tem"
-_sdk_install kotlin
-_sdk_install gradle
-_sdk_install maven
-set -u
+    _sdk_install() {
+        local candidate="$1"; shift
+        local version="${1:-}"
+        if sdk list "$candidate" 2>/dev/null | grep -q "installed"; then
+            echo -e "${GREEN}[INFO]${NC}  $candidate already installed via SDKMan."
+        elif [[ -n "$version" ]]; then
+            sdk install "$candidate" "$version"
+        else
+            sdk install "$candidate"
+        fi
+    }
+
+    _sdk_install java   "21.0.3-tem"
+    _sdk_install kotlin
+    _sdk_install gradle
+    _sdk_install maven
+) || warn "SDKMan setup had non-fatal errors – continuing."
 
 # =============================================================================
 # 6. uv (Python manager)
