@@ -42,6 +42,14 @@ export PATH="$HOME/.npm-global/bin:$PATH"
 # Zellij auto-start: open Zellij when entering a new interactive shell
 # (skip if already inside Zellij or a tmux session)
 # ---------------------------------------------------------------------------
+# Ensure Nix-managed binaries (including zellij) are on PATH
+for _p in "$HOME/.nix-profile/bin" \
+          "/nix/var/nix/profiles/default/bin" \
+          "$HOME/.local/state/nix/profiles/home-manager/home-path/bin"; do
+  [[ -d "$_p" ]] && [[ ":$PATH:" != *":$_p:"* ]] && export PATH="$_p:$PATH"
+done
+unset _p
+
 if [[ -z "$ZELLIJ" ]] && [[ -z "$TMUX" ]] && [[ "$TERM_PROGRAM" != "vscode" ]]; then
   if command -v zellij &>/dev/null; then
     # Attach to an existing session named 'main', or create it

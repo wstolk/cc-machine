@@ -191,6 +191,21 @@ fi
 mkdir -p "$HOME_DIR/.config/zsh"
 cp "$SCRIPT_DIR/config/zsh/extras.zsh" "$HOME_DIR/.config/zsh/extras.zsh"
 
+# Deploy Bash fallback: auto-start Zellij even when the login shell is still
+# bash (e.g. chsh to zsh failed or hasn't propagated yet).
+mkdir -p "$HOME_DIR/.config/bash"
+cp "$SCRIPT_DIR/config/bash/zellij-autostart.sh" "$HOME_DIR/.config/bash/zellij-autostart.sh"
+BASHRC="$HOME_DIR/.bashrc"
+BASH_MARKER="# cc-machine: zellij auto-start"
+if ! grep -qF "$BASH_MARKER" "$BASHRC" 2>/dev/null; then
+    cat >> "$BASHRC" <<'BASHEOF'
+
+# cc-machine: zellij auto-start
+[ -f "$HOME/.config/bash/zellij-autostart.sh" ] && source "$HOME/.config/bash/zellij-autostart.sh"
+BASHEOF
+    info "Added Zellij auto-start fallback to .bashrc."
+fi
+
 # =============================================================================
 # 4. Rust (via rustup)
 # =============================================================================
