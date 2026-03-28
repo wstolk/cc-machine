@@ -3,7 +3,8 @@
 # cc-machine install.sh
 #
 # One-command setup for an Ubuntu 24 LTS vibe-coding machine.
-# Run as your regular user (NOT root).  The script will use sudo where needed.
+# If run as root, automatically creates a 'claude' user and re-runs as that user.
+# Can also be run directly as a regular user (NOT root).
 #
 # Usage:
 #   bash <(curl -fsSL https://raw.githubusercontent.com/wstolk/cc-machine/main/install.sh)
@@ -22,12 +23,65 @@ section() { echo -e "\n${CYAN}══ $* ══${NC}\n"; }
 # ── helpers ───────────────────────────────────────────────────────────────────
 have() { command -v "$1" &>/dev/null; }
 
+# ── root handling: create claude user and re-exec ────────────────────────────
+REPO_URL="https://github.com/wstolk/cc-machine.git"
+TARGET_USER="claude"
+TARGET_HOME="/home/${TARGET_USER}"
+
+if [[ "$EUID" -eq 0 ]]; then
+    section "Running as root – bootstrapping '$TARGET_USER' user"
+
+    # 1. Create the user (idempotent)
+    if ! id "$TARGET_USER" &>/dev/null; then
+        info "Creating user '$TARGET_USER'…"
+        useradd -m -s /bin/bash "$TARGET_USER"
+    else
+        info "User '$TARGET_USER' already exists – skipping creation."
+    fi
+
+    # 2. Grant passwordless sudo
+    if [[ ! -f "/etc/sudoers.d/$TARGET_USER" ]]; then
+        info "Granting passwordless sudo to '$TARGET_USER'…"
+        echo "$TARGET_USER ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/$TARGET_USER"
+        chmod 0440 "/etc/sudoers.d/$TARGET_USER"
+    fi
+
+    # 3. Copy SSH authorized_keys so the user can log in via SSH
+    if [[ -f /root/.ssh/authorized_keys ]]; then
+        TARGET_SSH_DIR="$TARGET_HOME/.ssh"
+        mkdir -p "$TARGET_SSH_DIR"
+        cp /root/.ssh/authorized_keys "$TARGET_SSH_DIR/authorized_keys"
+        chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_SSH_DIR"
+        chmod 700 "$TARGET_SSH_DIR"
+        chmod 600 "$TARGET_SSH_DIR/authorized_keys"
+        info "Copied root's SSH authorized_keys to $TARGET_USER."
+    else
+        warn "No /root/.ssh/authorized_keys found – skipping SSH key copy."
+        warn "You will need to set up SSH access for '$TARGET_USER' manually."
+    fi
+
+    # 4. Clone the repo into the claude user's home
+    CC_REPO_DIR="$TARGET_HOME/cc-machine"
+    if [[ -d "$CC_REPO_DIR/.git" ]]; then
+        info "cc-machine repo already exists at $CC_REPO_DIR – pulling latest."
+        sudo -u "$TARGET_USER" git -C "$CC_REPO_DIR" pull --ff-only \
+            || warn "git pull failed – using existing checkout."
+    else
+        info "Cloning cc-machine into $CC_REPO_DIR…"
+        apt-get update -qq
+        apt-get install -y --no-install-recommends git
+        sudo -u "$TARGET_USER" git clone "$REPO_URL" "$CC_REPO_DIR"
+    fi
+
+    # 5. Re-execute as the claude user (exec replaces this process)
+    info "Re-executing install.sh as '$TARGET_USER'…"
+    exec sudo -u "$TARGET_USER" bash "$CC_REPO_DIR/install.sh" "$@"
+fi
+
+# ── resolved identity (always a non-root user at this point) ─────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USERNAME="${USER:-$(id -un)}"
 HOME_DIR="${HOME:-/home/$USERNAME}"
-
-# ── guard: must not run as root ───────────────────────────────────────────────
-[[ "$EUID" -eq 0 ]] && error "Run this script as a regular user, not root."
 
 # =============================================================================
 # 0. System prerequisites
