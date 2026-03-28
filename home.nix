@@ -55,7 +55,6 @@ in
     nodejs_22           # Node.js (TypeScript / Claude Code npm)
     nodePackages.npm
     nodePackages.typescript
-    nodePackages.ts-node
 
     # Zellij terminal multiplexer
     zellij
@@ -76,7 +75,7 @@ in
   # ---------------------------------------------------------------------------
   programs.git = {
     enable = true;
-    extraConfig = {
+    settings = {
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
