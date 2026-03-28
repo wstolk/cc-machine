@@ -82,6 +82,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USERNAME="${USER:-$(id -un)}"
 HOME_DIR="${HOME:-/home/$USERNAME}"
+cd "$HOME_DIR" || error "Cannot change to home directory '$HOME_DIR'"
 
 # =============================================================================
 # 0. System prerequisites
