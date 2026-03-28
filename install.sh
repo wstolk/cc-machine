@@ -108,12 +108,10 @@ else
     if sudo systemctl is-active --quiet nix-daemon.service 2>/dev/null; then
         sudo systemctl stop nix-daemon.socket nix-daemon.service
     fi
-    # 2. Restore shell profile backups so the installer can create fresh ones.
-    for f in /etc/bash.bashrc /etc/bashrc /etc/profile /etc/zshrc /etc/zsh/zshrc; do
-        if [[ -f "${f}.backup-before-nix" ]]; then
-            sudo mv "${f}.backup-before-nix" "$f"
-        fi
-    done
+    # 2. Restore all shell profile backups so the installer can create fresh ones.
+    while IFS= read -r backup; do
+        sudo mv "$backup" "${backup%.backup-before-nix}"
+    done < <(sudo find /etc -name '*.backup-before-nix' 2>/dev/null)
     curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
     # Source Nix in this script session
     # shellcheck disable=SC1091
