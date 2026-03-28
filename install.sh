@@ -153,8 +153,8 @@ mkdir -p "$HM_CONFIG_DIR"
 
 # Substitute the actual username / home dir into home.nix before copying
 sed \
-    -e "s|username ? \"user\"|username ? \"${USERNAME}\"|g" \
-    -e "s|homeDirectory ? \"/home/user\"|homeDirectory ? \"${HOME_DIR}\"|g" \
+    -e "s|username = \"user\"|username = \"${USERNAME}\"|g" \
+    -e "s|homeDirectory = \"/home/user\"|homeDirectory = \"${HOME_DIR}\"|g" \
     "$SCRIPT_DIR/home.nix" > "$HM_CONFIG_DIR/home.nix"
 
 # Copy supporting config files referenced by home.nix
@@ -253,10 +253,15 @@ fi
 # =============================================================================
 section "Claude Code"
 
+if ! have npm; then
+    error "npm not found on PATH. Ensure Home Manager installed Node.js successfully."
+fi
+
 # Configure npm to use a user-writable global prefix (no sudo needed)
 NPM_GLOBAL="$HOME_DIR/.npm-global"
 mkdir -p "$NPM_GLOBAL"
 npm config set prefix "$NPM_GLOBAL"
+export PATH="$NPM_GLOBAL/bin:$PATH"
 
 if have claude; then
     info "Claude Code already installed – updating."
