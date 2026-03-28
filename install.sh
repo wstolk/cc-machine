@@ -208,6 +208,8 @@ else
     curl -fsSL https://get.sdkman.io | bash
 fi
 
+# SDKMan's init script uses unbound variables, so temporarily relax nounset.
+set +u
 # shellcheck disable=SC1091
 source "$HOME_DIR/.sdkman/bin/sdkman-init.sh"
 
@@ -227,6 +229,7 @@ _sdk_install java   "21.0.3-tem"
 _sdk_install kotlin
 _sdk_install gradle
 _sdk_install maven
+set -u
 
 # =============================================================================
 # 6. uv (Python manager)
