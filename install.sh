@@ -163,6 +163,9 @@ cp "$SCRIPT_DIR/config/zellij/config.kdl" "$HM_CONFIG_DIR/config/zellij/config.k
 
 home-manager switch || warn "Home Manager switch had non-fatal errors – continuing."
 
+# Refresh PATH so Nix-managed tools (node, npm, etc.) are available immediately
+export PATH="$HOME_DIR/.nix-profile/bin:$PATH"
+
 # =============================================================================
 # 3. ZSH as default shell
 # =============================================================================
@@ -234,6 +237,8 @@ if have uv; then
 else
     info "Installing uv…"
     curl -LsSf https://astral.sh/uv/install.sh | sh
+    # Add uv to PATH for the rest of this script
+    export PATH="$HOME_DIR/.local/bin:$PATH"
 fi
 # Install a stable Python via uv
 "$HOME_DIR/.local/bin/uv" python install 3.12 2>/dev/null || true
