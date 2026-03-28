@@ -1,7 +1,11 @@
 # Home Manager configuration for cc-machine
 # Applied automatically by install.sh
-{ config, pkgs, lib, username ? "user", homeDirectory ? "/home/user", ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  username = "user";
+  homeDirectory = "/home/user";
+in
 {
   home.username = username;
   home.homeDirectory = homeDirectory;
