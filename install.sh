@@ -163,8 +163,13 @@ cp "$SCRIPT_DIR/config/zellij/config.kdl" "$HM_CONFIG_DIR/config/zellij/config.k
 
 home-manager switch || warn "Home Manager switch had non-fatal errors – continuing."
 
-# Refresh PATH so Nix-managed tools (node, npm, etc.) are available immediately
+# Refresh PATH so Nix-managed tools (node, npm, etc.) are available immediately.
+# Newer standalone Home Manager uses a separate profile; add both possible paths.
 export PATH="$HOME_DIR/.nix-profile/bin:$PATH"
+HM_HOME_PATH="$HOME_DIR/.local/state/nix/profiles/home-manager/home-path/bin"
+if [[ -d "$HM_HOME_PATH" ]]; then
+    export PATH="$HM_HOME_PATH:$PATH"
+fi
 
 # =============================================================================
 # 3. ZSH as default shell
