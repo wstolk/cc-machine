@@ -102,6 +102,13 @@ if have nix; then
     info "Nix already installed – skipping."
 else
     info "Installing Nix (multi-user)…"
+    # Clean up backup files from any previous failed Nix install attempt;
+    # the installer refuses to run if these already exist.
+    for f in /etc/bash.bashrc /etc/bashrc /etc/profile /etc/zshrc; do
+        if [[ -f "${f}.backup-before-nix" ]]; then
+            sudo mv "${f}.backup-before-nix" "$f"
+        fi
+    done
     curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
     # Source Nix in this script session
     # shellcheck disable=SC1091
