@@ -104,7 +104,7 @@ else
     info "Installing Nix (multi-user)…"
     # Clean up backup files from any previous failed Nix install attempt;
     # the installer refuses to run if these already exist.
-    for f in /etc/bash.bashrc /etc/bashrc /etc/profile /etc/zshrc; do
+    for f in /etc/bash.bashrc /etc/bashrc /etc/profile /etc/zshrc /etc/zsh/zshrc; do
         if [[ -f "${f}.backup-before-nix" ]]; then
             sudo mv "${f}.backup-before-nix" "$f"
         fi
