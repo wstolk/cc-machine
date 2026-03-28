@@ -201,32 +201,29 @@ fi
 # 5. SDKMan → Java 21 LTS + Kotlin + Gradle + Maven
 # =============================================================================
 section "SDKMan (Java / Kotlin / Gradle / Maven)"
-if [[ -d "$HOME_DIR/.sdkman" ]]; then
-    info "SDKMan already installed – sourcing."
-else
-    info "Installing SDKMan…"
-    curl -fsSL https://get.sdkman.io | bash
-fi
+# SDKMan is incompatible with bash strict mode (set -euo pipefail).
+# Run the entire install + init + sdk-install block in a subshell with
+# strict mode fully disabled, and use ?ci=true for headless operation.
+(
+    set +euo pipefail
+    export SDKMAN_DIR="${SDKMAN_DIR:-$HOME_DIR/.sdkman}"
+    export sdkman_auto_answer=true
 
-# shellcheck disable=SC1091
-source "$HOME_DIR/.sdkman/bin/sdkman-init.sh"
-
-_sdk_install() {
-    local candidate="$1"; shift
-    local version="${1:-}"
-    if sdk list "$candidate" 2>/dev/null | grep -q "installed"; then
-        info "$candidate already installed via SDKMan."
-    elif [[ -n "$version" ]]; then
-        sdk install "$candidate" "$version" || warn "SDKMan install $candidate $version failed."
+    if [[ ! -d "$SDKMAN_DIR" ]]; then
+        info "Installing SDKMan…"
+        curl -fsSL "https://get.sdkman.io?ci=true" | bash
     else
-        sdk install "$candidate" || warn "SDKMan install $candidate failed."
+        info "SDKMan already installed."
     fi
-}
 
-_sdk_install java   "21.0.3-tem"
-_sdk_install kotlin
-_sdk_install gradle
-_sdk_install maven
+    # shellcheck disable=SC1091
+    source "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+    sdk install java 21.0.3-tem || true
+    sdk install kotlin || true
+    sdk install gradle || true
+    sdk install maven || true
+) || warn "SDKMan setup had non-fatal errors – continuing."
 
 # =============================================================================
 # 6. uv (Python manager)
